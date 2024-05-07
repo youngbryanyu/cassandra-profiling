@@ -1,9 +1,12 @@
 # Cassandra SCAN Performance Profiling
 
-In this experiment, we use YCSB to run latency and throughput benchmarks of Cassandra. 
+This program uses YCSB to run latency and throughput benchmarks of Cassandra in Docker containers. 
 
 ## Navigation
-[Installation and Setup](#installation-and-setup)
+- [Installation and Setup](#installation-and-setup)
+- [How-to-run-the-workflow](#how-to-run-the-workflow)
+- [SCAN profiling](#scan-profiling)
+- [READ profiling](#read-profiling)
 
 ## Installation and Setup
 
@@ -11,7 +14,7 @@ In this experiment, we use YCSB to run latency and throughput benchmarks of Cass
 Install [docker](https://docs.docker.com/get-docker/) to run Cassandra nodes inside isolated containers. Make sure docker is set up.
 
 ### YCSB
-Install YCSB by running 
+Install YCSB in the root directory of this project by running:
 ```
 curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz
 tar xfvz ycsb-0.17.0.tar.gz
@@ -32,10 +35,12 @@ The usage of the script is:
 ./run_workflow.sh <config> <duration_seconds> <operation> <workload>
 ```
 where:
-- `config` is one of the values `default`, `lcs`, `rowcache`, `lcs-rowcache`
-- `duration_seconds` is the duration to run the benchmark 
-- `operation` is the operation we are benchmarking (e.g. SCAN)
-- `workload` is the workload we are using from YCSB
+- `config` is one of the supported values `default`, `lcs`, `rowcache`, `lcs-rowcache`
+- `duration_seconds` is the duration in seconds to run the benchmark 
+- `operation` is the operation we are benchmarking using YCSB (e.g. SCAN, READ, INSERT, etc)
+- `workload` is the workload we are using from YCSB (e.g. workloada, workloadb, workloadc, etc)
+
+All arguments are required in the order above.
 
 The raw data from the benchmarks is written to the directory `/output/ycsb`. The visualizations plotted from the data are located in the directory `/plots`.
 
