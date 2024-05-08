@@ -4,7 +4,6 @@ import numpy as np
 import sys
 import os
 
-
 # Plots the throughput of a single configuration
 def plot_latency(
     csv_path,
@@ -12,6 +11,7 @@ def plot_latency(
     workload,
     configuration,
     operation,
+    num_records,
     output_dir="plots/latency",
 ):
     # Check if output directory exists and create if not
@@ -57,7 +57,7 @@ def plot_latency(
     plt.xlabel("Metrics", fontsize=12, fontweight="bold")
     plt.ylabel("Latency (us)", fontsize=12, fontweight="bold")
     plt.title(
-        f"{operation} Latency Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes)",
+        f"{operation} Latency Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
         fontsize=14,
         fontweight="bold",
     )
@@ -76,6 +76,7 @@ def plot_throughput(
     workload,
     configuration,
     operation,
+    num_records,
     output_dir="plots/throughput",
 ):
     # Create output dir if it doesn't exist
@@ -119,7 +120,7 @@ def plot_throughput(
     plt.xlabel("Metrics", fontsize=12, fontweight="bold")
     plt.ylabel("Throughput (operations)", fontsize=12, fontweight="bold")
     plt.title(
-        f"{operation} Throughput Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes)",
+        f"{operation} Throughput Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
         fontsize=14,
         fontweight="bold",
     )
@@ -136,6 +137,7 @@ def plot_grouped_latency(
     duration_seconds,
     workload,
     operation,
+    num_records,
     directory="output/csv",
     output_dir="plots/latency",
 ):
@@ -155,7 +157,7 @@ def plot_grouped_latency(
     # Collect metrics and their labels for each configuration's CSV data
     for filename in os.listdir(directory):
         if filename.endswith(".csv"):
-            files.append(filename[:-4])
+            files.append(filename[:-4])  # Store filename without extension
             csv_path = os.path.join(directory, filename)
             df = pd.read_csv(csv_path)
             scan_df = df[df["OP"].str.contains(operation)]
@@ -207,7 +209,7 @@ def plot_grouped_latency(
     ax.set_xlabel("Metric", fontsize=12, fontweight="bold")
     ax.set_ylabel("Latency (us)", fontsize=12, fontweight="bold")
     ax.set_title(
-        f"{operation} Latency Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes)",
+        f"{operation} Latency Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
         fontsize=14,
         fontweight="bold",
     )
@@ -229,6 +231,7 @@ def plot_grouped_throughput(
     duration_seconds,
     workload,
     operation,
+    num_records,
     directory="output/csv",
     output_dir="plots/throughput",
 ):
@@ -296,7 +299,7 @@ def plot_grouped_throughput(
     ax.set_xlabel("Metric", fontsize=12, fontweight="bold")
     ax.set_ylabel("Throughput (operations)", fontsize=12, fontweight="bold")
     ax.set_title(
-        f"{operation} Throughput Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes)",
+        f"{operation} Throughput Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
         fontsize=14,
         fontweight="bold",
     )
@@ -315,14 +318,17 @@ def plot_grouped_throughput(
 
 # Entry point
 if __name__ == "__main__":
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print(
-            "Usage: python3 throughput.py <csv_file> <duration_seconds> <workload> <configuration> <operation>"
+            "Usage: python3 throughput.py <csv_file> <duration_seconds> <workload> <configuration> <operation> <num_records>"
         )
         sys.exit(1)
 
-    plot_latency(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-    plot_throughput(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-    plot_grouped_latency(sys.argv[2], sys.argv[3], sys.argv[5])
-    plot_grouped_throughput(sys.argv[2], sys.argv[3], sys.argv[5])
-    
+    plot_latency(
+        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
+    )
+    plot_throughput(
+        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
+    )
+    plot_grouped_latency(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6])
+    plot_grouped_throughput(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6])

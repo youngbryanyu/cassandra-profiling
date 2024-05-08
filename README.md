@@ -32,13 +32,15 @@ We will run our workflow using the `run_workflow.sh` script. This script does th
 
 The usage of the script is:
 ```
-./run_workflow.sh <config> <duration_seconds> <operation> <workload>
+./run_workflow.sh [-c] <config> <duration_seconds> <operation> <workload> <num_records>
 ```
 where:
+- `-c` is the optional flag specifying whether to cleanup and remove images and containers created by the workflow run
 - `config` is one of the supported values `default`, `lcs`, `rowcache`, `lcs-rowcache`
 - `duration_seconds` is the duration in seconds to run the benchmark 
 - `operation` is the operation we are benchmarking using YCSB (e.g. SCAN, READ, INSERT, etc)
 - `workload` is the workload we are using from YCSB (e.g. workloada, workloadb, workloadc, etc)
+- `num_records` is the number of records to load for the benchmark
 
 All arguments are required in the order above.
 
@@ -51,7 +53,7 @@ We compare the benchmarks of several configurations for the SCAN operation:
 - Use row cache
 - Use both LCS and row cache
 
-For the row cache, we set the limit to 10 GB, and cache all keys and rows per partition.
+For the row cache, we set the limit to 10 GB, and cache all keys and rows per partition. We test with 100,000 records.
 
 Here is the setup that we use:
 - 1 node cluster in Docker container
@@ -61,14 +63,13 @@ Here is the setup that we use:
 We run the benchmark on `workloade` which has a 95:5 SCAN to INSERT ratio, but set the number of operations to the max and run for 15 minutes.
 
 ### Running the benchmarks
-
 We run the benchmark workflow for each of the 4 configurations, profiling the SCAN operation for workload e using: 
 ```
 chmod +x run_workflow.sh
-./run_workflow.sh default 900 SCAN workloade
-./run_workflow.sh lcs 900 SCAN workloade
-./run_workflow.sh rowcache 900 SCAN workloade
-./run_workflow.sh lcs-rowcache 900 SCAN workloade
+./run_workflow.sh -c default 900 SCAN workloade 1000
+./run_workflow.sh -c lcs 900 SCAN workloade 1000
+./run_workflow.sh -c rowcache 900 SCAN workloade 1000
+./run_workflow.sh -c lcs-rowcache 900 SCAN workloade 1000
 ```
 
 ### Results
@@ -78,17 +79,23 @@ Below are the results comparing the latencies (mean, P95, P99) for each configur
 ![Grouped Throughput Plot](./plots/read-only-do-not-modify/scan-e/throughput/grouped-throughput-plot.png)
 
 #### Average Latency and Throughput
-We can see that the default configuration has the highest average latency and 2nd to worst throughput, which implies that it's the worst, not by any significant margin, without any specific optimizations for the usage pattern. The row cache configuration had the lowest average latency. However this result should be taken with a grain of salt since while running the workflow, I ran `node exec -it cassandra nodetool info` several times, and noticed that the rowcache has 0% utilization and 0% hit rate. Thus it appears that this is not the reason the performance improved and it may have been random.
+We can see that the default configuration has the highest average latency and 2nd to worst throughput, which implies that it's the worst, not by any significant margin, without any specific optimizations for the usage pattern. 
 
-Performance wise, all were very close.
+Using LCS compaction had a slight improvement in latency, but didn't improve throughput.
+
+Enabling the row cache actually worsened latency.
 
 #### P95 and P99 Latency and Throughput
-Again, enabling row cache performs around the best for SCAN heavy patterns, but by a very small margin. LCS also appears to have a slight performance improvement compared to the base default configuration. The default configuration and the configuration with both enabled doesn't improve performance.
+Again, enabling row cache worsened latency a bit. 
+
+LCS also once again appears to have a slight latency performance improvement compared to the base default configuration. 
 
 #### Discussion
-The row cache in cassandra is ideal for point queries that randomly access by key, or read operations that often read the same rows. Thus, row caching is not optimized for sequential scan operations.
+The row cache in cassandra is ideal for point queries that randomly access by key, or read operations that often read the same rows. Thus, row caching is not optimized for sequential scan operations. Enabling row caching could be causing some extra overhead. However, I ran `node exec -it cassandra nodetool info` several times, and noticed that the rowcache had 0% utilization and 0% hit rate, so it could be due to something else internally or to just performance variation.
 
-LCS performed slightly better that the default. But when combined with row cache, gave the worst performance which could be due to extra overhead. LCS is optimized to improve read performance by reducing the number of SSTables accessed from disk during reads. However, for scan-heavy workloads, this may not improve perfomance since scans involve reading a large volume of data sequentially.
+LCS performed slightly better that the default. LCS is optimized to improve query performance by reducing the number of SSTables accessed from disk, which could explain the slight latency improvement.
+
+Using both LCS and rowcache slightly worsened latency, except for in the P99 metric. By not much, it had a miniscule increase in throughput.
 
 ## READ profiling
 We compare the benchmarks of several configurations for the READ operation:
@@ -97,7 +104,7 @@ We compare the benchmarks of several configurations for the READ operation:
 - Use row cache
 - Use both LCS and row cache
 
-For the row cache, we set the limit to 10 GB, and cache all keys and rows per partition.
+For the row cache, we set the limit to 10 GB, and cache all keys and rows per partition. We test with 100,000 records.
 
 Here is the setup that we use:
 - 1 node cluster in Docker container
@@ -106,13 +113,26 @@ Here is the setup that we use:
 
 We run the benchmark on `workloadd` which has a 95:5 READ to INSERT ratio, but set the number of operations to the max and run for 15 minutes.
 
+### Running the benchmarks
+We run the benchmark workflow for each of the 4 configurations, profiling the READ operation for workload d using: 
+```
+chmod +x run_workflow.sh
+./run_workflow.sh -c default 900 READ workloadd 1000
+./run_workflow.sh -c lcs 900 READ workloadd 1000
+./run_workflow.sh -c rowcache 900 READ workloadd 1000
+./run_workflow.sh -c lcs-rowcache 900 READ workloadd 1000
+```
+
 ### Results
 Below are the results comparing the latencies (mean, P95, P99) for each configuration.
 
 #### Average Latency and Throughput
 
-Performance wise, all were very close.
+
+
 
 #### P95 and P99 Latency and Throughput
 
 #### Discussion
+
+I ran `node exec -it cassandra nodetool info` several times with rowcache enabled and set to ALL keys and rows per partition, the hit rate hovered around 85+%.

@@ -2,16 +2,16 @@ version: '3.8'
 services:
   # Creates the cassandra node
   cassandra:
+    image: cassandra
+    container_name: cassandra
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cassandra
       args:
         CONFIG_PATH: ${CONFIG_PATH}
         CQL_PATH: ${CQL_PATH}
     ports:
       - "9042:9042"
-    image: cassandra
-    container_name: cassandra
     deploy:
       resources:
         limits:
@@ -24,3 +24,14 @@ services:
     entrypoint: [ "/init.sh" ]
     volumes:
       - ./cql/init.sh:/init.sh
+
+  # Runs YCSB for benchmarking
+  ycsb:
+    image: ycsb
+    container_name: ycsb
+    build: 
+      context: .
+      dockerfile: Dockerfile.ycsb
+    volumes:
+      - ./output/ycsb:/usr/src/ycsb/output/ycsb
+

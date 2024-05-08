@@ -1,0 +1,20 @@
+# Use official Java 8 runtime as a parent image
+FROM openjdk:8-jre
+
+# Install Python
+RUN apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/bin/python
+
+# Set the working directory in container to ycsb
+WORKDIR /usr/src/ycsb
+
+# Copy YCSB into container
+COPY ycsb /usr/src/ycsb
+
+# Make the YCSB shell script executable
+RUN chmod +x /usr/src/ycsb/bin/ycsb.sh
+
+# Create output/ycsb dir
+RUN mkdir -p /usr/src/ycsb/output/ycsb
+
+# Default command to keep the container running
+CMD ["tail", "-f", "/dev/null"]
