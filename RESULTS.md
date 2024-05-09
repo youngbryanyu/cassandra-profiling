@@ -68,6 +68,16 @@ Chunk Cache: entries 7680, size 480 MiB, capacity 480 MiB, 712339 misses, 425109
 
 The chunk cache has a 99.5% hit rate when increased to store all records. With the default settings, the hit rate is about 83.2%. This is still decent. Knowing that the hit rate is nearly perfect with a higher chunk cache, the latency and throughput should improve, but there is likely some other system bottleneck causing no performance increase.
 
+I noticed that with 16 threads working, the CPU utilization would sometimes hit over 800% for the 8 cores I have. I ran a sanity check to ensure the bottleneck wasn't CPU or disk space by running similar tests with less records and also with less threads, and the results below indicate that neither CPU nor memory limits are the problem.
+
+![Sanity check less threads](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu/grouped-latency-plot.png)
+![Sanity check less threads and records](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu+memory/grouped-latency-plot.png)
+
+I also considered whether increasing the workload to 2 million records so using a larger file cache would keep a high cache hit ratio while the default would have a lower cache hit ratio, since I wanted to see if the file cache would benefit a higher load. I didn't run this for the full 15 minutes, but based on my tests, running with the same configurations for 1 vs 15 minutes didn't change the latency or throughput per second as long as the hardware could support it. There were no latency or throughput improvements:
+
+![Sanity check less threads](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu/grouped-latency-plot.png)
+![Sanity check less threads and records](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu+memory/grouped-latency-plot.png)
+
 # Follow up: READ profiling with workload d
 Since the row cache is meant for random reads and it did not yield improvements for the SCAN heavy workload, I ran `workloadd` which has a 95:5 READ to INSERT ratio and a request distribution of latest, and set the number of operations to the max and ran for 15 minutes:
 ```

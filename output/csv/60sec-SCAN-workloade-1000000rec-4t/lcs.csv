@@ -1,0 +1,17 @@
+RUNID,DB,WORKLOAD,THREADS,RECORDS,OP,METRIC,VALUE
+1,cassandra,workloade,4,1000000,[OVERALL],RunTime(ms),62243
+1,cassandra,workloade,4,1000000,[OVERALL],Throughput(ops/sec),3234.7894542358176
+1,cassandra,workloade,4,1000000,[INSERT],Operations,10125
+1,cassandra,workloade,4,1000000,[INSERT],AverageLatency(us),750.0195555555556
+1,cassandra,workloade,4,1000000,[INSERT],MinLatency(us),139
+1,cassandra,workloade,4,1000000,[INSERT],MaxLatency(us),39967
+1,cassandra,workloade,4,1000000,[INSERT],95thPercentileLatency(us),1397
+1,cassandra,workloade,4,1000000,[INSERT],99thPercentileLatency(us),2059
+1,cassandra,workloade,4,1000000,[INSERT],Return=OK,10125
+1,cassandra,workloade,4,1000000,[SCAN],Operations,191218
+1,cassandra,workloade,4,1000000,[SCAN],AverageLatency(us),1166.8167954899643
+1,cassandra,workloade,4,1000000,[SCAN],MinLatency(us),181
+1,cassandra,workloade,4,1000000,[SCAN],MaxLatency(us),75519
+1,cassandra,workloade,4,1000000,[SCAN],95thPercentileLatency(us),2117
+1,cassandra,workloade,4,1000000,[SCAN],99thPercentileLatency(us),4495
+1,cassandra,workloade,4,1000000,[SCAN],Return=OK,191218
