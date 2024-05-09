@@ -68,7 +68,7 @@ Chunk Cache: entries 7680, size 480 MiB, capacity 480 MiB, 712339 misses, 425109
 
 The chunk cache has a 99.5% hit rate when increased to store all records. With the default settings, the hit rate is about 83.2%. This is still decent. Knowing that the hit rate is nearly perfect with a higher chunk cache, the latency and throughput should improve, but there is likely some other system bottleneck causing no performance increase.
 
-I noticed that with 16 threads working, the CPU utilization would sometimes hit over 800% for the 8 cores I have. I ran a sanity check to ensure the bottleneck wasn't CPU or disk space by running similar tests with less records and also with less threads, and the results below indicate that neither CPU nor memory limits are the problem.
+I noticed that with 16 threads working, the CPU utilization would sometimes hit over 800% for the 8 cores I have. I ran a sanity check to ensure the bottleneck wasn't CPU or disk space by running similar tests with less records with less threads for just 1 minute, and the results below indicate that neither CPU nor memory limits are the problem.
 
 ![Sanity check less threads](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu/grouped-latency-plot.png)
 ![Sanity check less threads and records](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu+memory/grouped-latency-plot.png)
