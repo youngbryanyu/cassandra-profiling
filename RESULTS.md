@@ -94,7 +94,7 @@ Below are the plots of the results I got for the benchmark.
 ![Grouped Latency Plot](./plots/read-only-do-not-modify/read-d/latency/grouped-latency-plot.png)
 ![Grouped Throughput Plot](./plots/read-only-do-not-modify/read-d/throughput/grouped-throughput-plot.png)
 
-From the results it seems using LCS compaction improves throughput by a tiny bit, but worsens latency by a tiny bit. Using the row cache seems to decrease throughput a bit and increase latency a bit.
+From the results it seems using LCS compaction improves throughput by a tiny bit, and also improves average latency a bit, but the P95 and P99 latency somehow came out a bit worse. Using the row cache seems to decrease throughput a bit and increase latency a bit.
 
 ### Discussion
 In workload d, the request distribution is set to latest. Thus, recent records being read are likely still in the memtable which is why using the row cache did not improve throughput or performance since it didn't help reduce disk I/O. 
