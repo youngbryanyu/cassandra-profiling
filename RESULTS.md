@@ -75,8 +75,8 @@ I noticed that with 16 threads working, the CPU utilization would sometimes hit 
 
 I also considered whether increasing the workload to 2 million records so using a larger file cache would keep a high cache hit ratio while the default would have a lower cache hit ratio, since I wanted to see if the file cache would benefit a higher load. I didn't run this for the full 15 minutes, but based on my tests, running with the same configurations for 1 vs 15 minutes didn't change the latency or throughput per second as long as the hardware could support it. There were no latency or throughput improvements:
 
-![Sanity check less threads](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu/grouped-latency-plot.png)
-![Sanity check less threads and records](./plots/read-only-do-not-modify/scan-e-sanity-check-cpu+memory/grouped-latency-plot.png)
+![Sanity check less threads](./plots/read-only-do-not-modify/scan-e-2million/grouped-latency-plot.png)
+![Sanity check less threads and records](./plots/read-only-do-not-modify/scan-e-2million/grouped-throughput-plot.png)
 
 # Follow up: READ profiling with workload d
 Since the row cache is meant for random reads and it did not yield improvements for the SCAN heavy workload, I ran `workloadd` which has a 95:5 READ to INSERT ratio and a request distribution of latest, and set the number of operations to the max and ran for 15 minutes:
