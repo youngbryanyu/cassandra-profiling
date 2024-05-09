@@ -1,4 +1,4 @@
-# Cassandra SCAN Performance Profiling
+# Cassandra Performance Profiling
 
 This program uses YCSB to run latency and throughput benchmarks of Cassandra in Docker containers. 
 
