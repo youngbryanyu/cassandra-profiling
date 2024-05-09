@@ -2,10 +2,11 @@
 
 This program uses YCSB to run latency and throughput benchmarks of Cassandra in Docker containers. 
 
+The results and analysis I got from running some SCAN and READ workloads are in [RESULTS.md](./RESULTS.md).
+
 ## Navigation
 - [Installation and Setup](#installation-and-setup)
 - [How-to-run-the-workflow](#how-to-run-the-workflow)
-- [SCAN profiling](#scan-profiling)
 
 ## Installation and Setup
 

@@ -84,9 +84,21 @@ However, I was very surprised to see that enabling the row cache worsened throug
 Row Cache : entries 999314, size 1.19 GiB, capacity 9.77 GiB, 14910802 hits, 15910116 requests, 0.937 recent hit rate, 0 save period in seconds
 ```
 
-When i ran `docker exec -it nodetool tablstats`, the ycsb table used for the benchmark also had far less bloom filter false and false positives after enabling the row cache, and less bloom filter use in general due to requests being served from the row cache. 
+When i ran `docker exec -it nodetool tablestats`, the ycsb table used for the benchmark also had far less bloom filter false and false positives after enabling the row cache, and less bloom filter use in general due to requests being served from the row cache. 
 
 #### Discussion
 I'm really not sure why the row cache reduced read performance despite having a very high hit ratio. I will have to run cassandra with tracing to understand why. running `docker exec -it nodetool gcstats` indicated that the garbage collector ran for typically 5 or less seconds during the entire 15 minutes.
 
 LCS improving workload c of pure reads using a zipfian distribution makes sense since LCS helps minimize read amplification on disk due to the non-overlapping layered SSTable layout.
+
+The tablestats also indicated when the rowcache was enabled, the read latency was:
+```
+Read Latency: 0.01945089752831706 ms
+```
+
+When only LCS was enabled, the read latency was 
+```
+Read Latency: 0.023868284696488416 ms
+```
+
+However ycsb's benchmarking indicated that LCS had lower read latency, so there must be some other bottleneck somewhere when the row cache is enabled.
