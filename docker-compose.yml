@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   # Creates the cassandra node
   cassandra:

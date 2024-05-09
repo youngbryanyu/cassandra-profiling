@@ -25,7 +25,7 @@ chmod +x run_workflow.sh
 ```
 
 ## Results
-Below are the plots of the results I got for the benchmarks for both 1 million and 1 thousand records.
+Below are the plots of the results I got for the benchmarks for both 1 million records.
 
 ![Grouped Latency Plot](./plots/read-only-do-not-modify/scan-e/latency/grouped-latency-plot.png)
 ![Grouped Throughput Plot](./plots/read-only-do-not-modify/scan-e/throughput/grouped-throughput-plot.png)
@@ -36,6 +36,37 @@ For 1 million records, it seems as if utilizing LCS provided a very negligible i
 The row cache in cassandra is ideal for point queries that randomly access by key, or read operations that often read the same rows. Thus, row caching is not optimized for sequential scan operations. I ran `node exec -it cassandra nodetool info` several times, and noticed that the rowcache had 0% utilization and 0% hit rate despite being enabled and having the 10 GB allocated. Based on what I've read, scan operations do not populate the row cache.
 
 LCS organizes data into levels where each level contains non-overlapping SSTables. Each subsequent level is several times larger than the previous one. Most reads can be satisfied by searching only a few levels, typically starting from the smallest level. LCS theoretically and in practice should improve the number of SSTables touched during random reads. However if the scans spanned across multiple partitions of cross SSTables, using LCS may not improve performance like in this case.
+
+# Follow up: file cache
+The file cache is used to cache blocks of data from sstables to reduce necessary disk I/O. We set the file cache size to 10 GB. This sounds like it would help our SCANs if all or all frequently used sstables are cached. Also note that the filecache (chunk cache) is already on by default, but the size is smaller. We run this on workload e again with 1 million records:
+
+```
+chmod +x run_workflow.sh
+./run_workflow.sh -c default 900 SCAN workloade 1000000 16
+./run_workflow.sh -c filecache 900 SCAN workloade 1000000 16
+```
+
+## Results
+I ran the benchmark twice and the latency results were below:
+![Grouped Latency Plot 1](./plots/read-only-do-not-modify/scan-e-filecache/grouped-latency-plot.png)
+![Grouped Latency Plot 2](./plots/read-only-do-not-modify/scan-e-filecache/grouped-latency-plot2.png)
+
+In the first run, enabling the filecache significantly reduced latency, but on the second run the default configuration did better and latency was about the same.
+
+### Discussion
+In theory, with enough memory, the file cache should significantly save I/O for scan operations and reduce latency. 
+
+With the file cache set to 10 GB, storing all records, running `docker exec -t nodetool info` mid-run gives:
+```
+Chunk Cache: entries 17827, size 1.09 GiB, capacity 9.73 GiB, 68698 misses, 13287312 requests, 0.995 recent hit rate, 60.625 microseconds miss latency
+```
+
+With the file cache at the default settings, running the same mid-run gives:
+```
+Chunk Cache: entries 7680, size 480 MiB, capacity 480 MiB, 712339 misses, 4251094 requests, 0.832 recent hit rate, 28.989 microseconds miss latency
+```
+
+The chunk cache has a 99.5% hit rate when increased to store all records. With the default settings, the hit rate is about 83.2%. This is still decent. Knowing that the hit rate is nearly perfect with a higher chunk cache, the latency and throughput should improve, but there is likely some other system bottleneck causing no performance increase.
 
 # Follow up: READ profiling with workload d
 Since the row cache is meant for random reads and it did not yield improvements for the SCAN heavy workload, I ran `workloadd` which has a 95:5 READ to INSERT ratio and a request distribution of latest, and set the number of operations to the max and ran for 15 minutes:
@@ -102,3 +133,4 @@ Read Latency: 0.023868284696488416 ms
 ```
 
 However ycsb's benchmarking indicated that LCS had lower read latency, so there must be some other bottleneck somewhere when the row cache is enabled.
+

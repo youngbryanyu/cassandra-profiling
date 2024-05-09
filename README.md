@@ -36,7 +36,7 @@ The usage of the script is:
 ```
 where:
 - `-c` is the optional flag specifying whether to cleanup and remove images and containers created by the workflow run
-- `config` is one of the supported values `default`, `lcs`, `rowcache`, `lcs-rowcache`
+- `config` is one of the supported values `default`, `lcs`, `rowcache`, `lcs-rowcache`, `filecache`
 - `duration_seconds` is the duration in seconds to run the benchmark 
 - `operation` is the operation we are benchmarking using YCSB (e.g. SCAN, READ, INSERT, etc)
 - `workload` is the workload we are using from YCSB (e.g. workloada, workloadb, workloadc, etc)
