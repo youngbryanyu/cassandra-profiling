@@ -120,7 +120,7 @@ Below are the results I got from the benchmark:
 
 From the results it seems using LCS compaction improves both throughput and latency a good chunk (around 15-20% on average). 
 
-However, I was very surprised to see that enabling the row cache worsened throughput, as well as average latency. I made sure the row cache was working by running `docker exec -it nodetool info`, and it indicated that that cache hit ratio was around 90% so records were definitely not hitting disk. 
+However, I was very surprised to see that enabling the row cache worsened throughput, as well as average latency. I made sure the row cache was working by running `docker exec -it nodetool info`, and it indicated that that cache hit ratio was around 90% so queries were definitely not hitting disk. 
 ```
 Row Cache : entries 999314, size 1.19 GiB, capacity 9.77 GiB, 14910802 hits, 15910116 requests, 0.937 recent hit rate, 0 save period in seconds
 ```
