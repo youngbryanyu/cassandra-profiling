@@ -12,8 +12,12 @@ def plot_latency(
     configuration,
     operation,
     num_records,
-    output_dir="plots/latency",
+    threads,
+    path
 ):
+    # determine output dir
+    output_dir=f"plots/{path}/latency"
+
     # Check if output directory exists and create if not
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -57,7 +61,7 @@ def plot_latency(
     plt.xlabel("Metrics", fontsize=12, fontweight="bold")
     plt.ylabel("Latency (us)", fontsize=12, fontweight="bold")
     plt.title(
-        f"{operation} Latency Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
+        f"{operation} Latency Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records, {threads} threads)",
         fontsize=14,
         fontweight="bold",
     )
@@ -77,8 +81,12 @@ def plot_throughput(
     configuration,
     operation,
     num_records,
-    output_dir="plots/throughput",
+    threads,
+    path
 ):
+    # determine output dir
+    output_dir=f"plots/{path}/throughput"
+
     # Create output dir if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -120,7 +128,7 @@ def plot_throughput(
     plt.xlabel("Metrics", fontsize=12, fontweight="bold")
     plt.ylabel("Throughput (operations)", fontsize=12, fontweight="bold")
     plt.title(
-        f"{operation} Throughput Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
+        f"{operation} Throughput Metrics ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records, {threads} threads)",
         fontsize=14,
         fontweight="bold",
     )
@@ -138,9 +146,13 @@ def plot_grouped_latency(
     workload,
     operation,
     num_records,
-    directory="output/csv",
-    output_dir="plots/latency",
+    threads,
+    path
 ):
+    # Append sub path to CSV and plot dirs 
+    directory="output/csv/" + path
+    output_dir=f"plots/{path}/latency"
+
     # Check if output directory exists and create if not
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -209,7 +221,7 @@ def plot_grouped_latency(
     ax.set_xlabel("Metric", fontsize=12, fontweight="bold")
     ax.set_ylabel("Latency (us)", fontsize=12, fontweight="bold")
     ax.set_title(
-        f"{operation} Latency Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
+        f"{operation} Latency Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records, {threads} threads)",
         fontsize=14,
         fontweight="bold",
     )
@@ -232,9 +244,13 @@ def plot_grouped_throughput(
     workload,
     operation,
     num_records,
-    directory="output/csv",
-    output_dir="plots/throughput",
+    threads,
+    path
 ):
+    # Append sub path to CSV and plot dirs 
+    directory="output/csv/" + path
+    output_dir=f"plots/{path}/throughput"
+
     # Check if output directory exists and create if not
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -299,7 +315,7 @@ def plot_grouped_throughput(
     ax.set_xlabel("Metric", fontsize=12, fontweight="bold")
     ax.set_ylabel("Throughput (operations)", fontsize=12, fontweight="bold")
     ax.set_title(
-        f"{operation} Throughput Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records)",
+        f"{operation} Throughput Metrics by Configuration ({workload}, {float(duration_seconds)/60:.2f} minutes, {num_records} records, {threads} threads)",
         fontsize=14,
         fontweight="bold",
     )
@@ -320,15 +336,17 @@ def plot_grouped_throughput(
 if __name__ == "__main__":
     if len(sys.argv) < 6:
         print(
-            "Usage: python3 throughput.py <csv_file> <duration_seconds> <workload> <configuration> <operation> <num_records>"
+            "Usage: python3 throughput.py <csv_file> <duration_seconds> <workload> <configuration> <operation> <num_records> <threads> <path>"
         )
         sys.exit(1)
 
     plot_latency(
-        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
+        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8]
     )
     plot_throughput(
-        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
+        sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8]
     )
-    plot_grouped_latency(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6])
-    plot_grouped_throughput(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6])
+    plot_grouped_latency(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
+    plot_grouped_throughput(sys.argv[2], sys.argv[3], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
+
+# TODO: take num_records and threads from CSV instead reading from command line args

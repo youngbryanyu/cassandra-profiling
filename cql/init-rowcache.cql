@@ -17,4 +17,4 @@ CREATE TABLE usertable (
     field7 varchar,
     field8 varchar,
     field9 varchar
-) WITH caching = {'keys': 'ALL', 'rows_per_partition': 'ALL'};
+) WITH caching = {'keys': 'NONE', 'rows_per_partition': 'ALL'};

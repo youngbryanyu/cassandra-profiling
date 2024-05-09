@@ -18,4 +18,4 @@ CREATE TABLE usertable (
     field8 varchar,
     field9 varchar
 ) WITH compaction = {'class': 'LeveledCompactionStrategy'}
-    AND caching = {'keys': 'ALL', 'rows_per_partition': 'ALL'};
+    AND caching = {'keys': 'NONE', 'rows_per_partition': 'ALL'};

@@ -3,7 +3,7 @@
 # Function to clean up docker resources
 cleanup() {
     echo "Cleaning up..."
-    docker rm cassandra init ycsb
+    docker compose down
     docker image rm cassandra ycsb
 }
 
@@ -30,9 +30,9 @@ done
 shift $((OPTIND-1))
 
 # Validate enough command line args
-if [ $# -lt 5 ]; then
+if [ $# -lt 6 ]; then
     echo "Error: Not enough arguments provided."
-    echo "Usage: $0 [-c] <config_name> <duration_seconds> <operation> <workload> <num_records>"
+    echo "Usage: $0 [-c] <config_name> <duration_seconds> <operation> <workload> <num_records> <threads>"
     exit 1
 fi
 
@@ -42,6 +42,10 @@ duration_seconds=$2
 operation=$3
 workload=$4
 num_records=$5
+threads=$6
+
+# sub directory path to save results in output/csv, output/ycsb, and plots
+path="$duration_seconds"sec-$operation-$workload-"$num_records"rec-"$threads"t
 
 # Load .env config file (contains cassandra configuration to use)
 CONFIG_FILE="./config/.env.$config_name"
@@ -65,7 +69,7 @@ chmod +x cql/init.sh
 docker-compose up --build -d cassandra
 
 # Wait until cassandra is ready
-echo "Waint for cassandra to be ready..."
+echo "Waiting for cassandra to be ready..."
 count=0
 until check_cassandra; do    
     sleep 5
@@ -83,21 +87,26 @@ echo "ycsb container is ready!"
 echo "Populating cassandra with initial keyspace and table"
 docker-compose up --build init
 
+# Create output dirs if they don't exist yet
+docker exec ycsb mkdir -p /usr/src/ycsb/output/ycsb/"$path"
+mkdir -p ./output/ycsb/"$path"
+mkdir -p ./output/csv/"$path"
+
 # Load for benchmarks
 echo "Loading initial data for benchmarks..."
-docker exec -it ycsb sh -c './bin/ycsb.sh load cassandra-cql -p hosts="cassandra" -p port=9042 -p recordcount='"$num_records"' -s -P ./workloads/'"$workload"''
+docker exec -it ycsb sh -c './bin/ycsb.sh load cassandra-cql -p hosts="cassandra" -p port=9042 -p recordcount='$num_records' -p threadcount='$threads' -s -P ./workloads/'$workload''
 
 # Run benchmarks
 echo "Running benchmarks..."
-docker exec ycsb sh -c './bin/ycsb.sh run cassandra-cql -p hosts="cassandra" -p port=9042 -p operationcount=2147483647 -p recordcount='"$num_records"' -p maxexecutiontime='"$duration_seconds"' -s -P ./workloads/'"$workload"' > /usr/src/ycsb/output/ycsb/'"$config_name"'.dat'
+docker exec ycsb sh -c './bin/ycsb.sh run cassandra-cql -p hosts="cassandra" -p port=9042 -p operationcount=2147483647 -p recordcount='"$num_records"' -p maxexecutiontime='$duration_seconds' -p threadcount='$threads' -s -P ./workloads/'$workload' > /usr/src/ycsb/output/ycsb/'$path'/'$config_name'.dat'
 
 # Parse YCSB output to CSV
 echo "Parsing YCSB benchmark output to CSV..."
-python ./src/csv_builder.py ./output/ycsb/$config_name.dat ./output/csv/$config_name.csv 1 cassandra $workload NA NA
+python ./src/csv_builder.py ./output/ycsb/$path/$config_name.dat ./output/csv/$path/$config_name.csv 1 cassandra $workload $threads $num_records
 
 # Build plots
 echo "Building visualization plots..."
-python ./src/plot_builder.py ./output/csv/$config_name.csv $duration_seconds $workload $config_name $operation $num_records
+python ./src/plot_builder.py ./output/csv/$path/$config_name.csv $duration_seconds $workload $config_name $operation $num_records $threads $path
 
 # Stop containers
 docker stop cassandra init ycsb
