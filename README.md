@@ -10,6 +10,8 @@ The results and analysis I got from running some SCAN and READ workloads are in 
 
 ## Installation and Setup
 
+Clone the repo by running `git clone https://github.com/youngbryanyu/cassandra-profiling.git`.
+
 ### Docker
 Install [docker](https://docs.docker.com/get-docker/). We use docker to run all programs inside isolated containers. Make sure docker is set up.
 
